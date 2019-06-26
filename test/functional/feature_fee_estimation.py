@@ -231,6 +231,15 @@ class EstimateFeeTest(BitcoinTestFramework):
             self.transact_and_mine(10, self.nodes[1])
             check_estimates(self.nodes[1], self.fees_per_kb)
 
+        # Verify that estimation parameters affect the fee used by sendtoaddress:
+        self.transact_and_mine(10, self.nodes[2])
+        estimate = self.nodes[1].estimatesmartfee(5, 'ECONOMICAL')
+        address = self.nodes[2].getnewaddress()
+        txid = self.nodes[1].sendtoaddress(address, 0.1, '', '', True, True, 5, 'ECONOMICAL')
+        estimated_fee = round(estimate['feerate'] * self.nodes[1].getrawtransaction(txid, True)['vsize'] / 1000, 6)
+        actual_fee = round(-self.nodes[1].gettransaction(txid)['fee'], 6)
+        assert_equal(estimated_fee, actual_fee)
+
         # Finish by mining a normal-sized block:
         while len(self.nodes[1].getrawmempool()) > 0:
             self.nodes[1].generate(1)
