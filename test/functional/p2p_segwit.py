@@ -1898,7 +1898,7 @@ class SegWitTest(BitcoinTestFramework):
 
         # Restart with the new binary
         self.stop_node(2)
-        self.start_node(2, extra_args=["-segwitheight={}".format(SEGWIT_HEIGHT)])
+        self.start_node(2, extra_args=["-segwitheight={}".format(SEGWIT_HEIGHT), "-walletcrosschain"])
         connect_nodes(self.nodes[0], 2)
 
         self.sync_blocks()
