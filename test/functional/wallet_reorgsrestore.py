@@ -18,10 +18,12 @@ import os
 import shutil
 
 from test_framework.test_framework import BitcoinTestFramework
+from test_framework.test_node import FailedToStartError
 from test_framework.util import (
         assert_equal,
         connect_nodes,
         disconnect_nodes,
+        assert_raises,
 )
 
 class ReorgsRestoreTest(BitcoinTestFramework):
@@ -91,7 +93,8 @@ class ReorgsRestoreTest(BitcoinTestFramework):
         self.stop_node(1)
         self.nodes[0].backupwallet(os.path.join(self.nodes[0].datadir, 'wallet.bak'))
         shutil.copyfile(os.path.join(self.nodes[0].datadir, 'wallet.bak'), os.path.join(self.nodes[1].datadir, self.chain, 'wallet.dat'))
-        self.start_node(1)
+        assert_raises(FailedToStartError, self.start_node, 1)
+        self.start_node(1, ['-walletcrosschain'])
         tx_after_reorg = self.nodes[1].gettransaction(txid)
         # Check that normal confirmed tx is confirmed again but with different blockhash
         assert_equal(tx_after_reorg["confirmations"], 2)
